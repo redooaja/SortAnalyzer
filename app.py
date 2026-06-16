@@ -467,11 +467,8 @@ st.subheader("🔍 Binary Search")
 
 if st.session_state.sorted_data is not None:
 
-    nim_query = st.number_input(
-        "Masukkan NIM yang dicari",
-        min_value=1000,
-        value=1001,
-        step=1
+    nim_query = st.text_input(
+        "Masukkan NIM yang dicari"
     )
 
     if st.button("Cari dengan Binary Search"):
