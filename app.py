@@ -1,7 +1,6 @@
 import pandas as pd
 import time
 import streamlit as st
-import pandas as pd
 import tracemalloc
 from data.generator import generate_data
 import plotly.express as px
@@ -27,31 +26,84 @@ st.set_page_config(
     layout="wide"
 )
 
-# INJEKSI CSS KUSTOM UNTUK ANIMASI, FONT, DAN TEMA TERANG YANG NYAMAN
-st.markdown("""
+# --- CONFIG WARNA SOLID ---
+BG_COLOR_SOLID = "#263238"   # Warna background utama
+SIDEBAR_COLOR = "#1E272C"    # Warna background sidebar
+TEXT_COLOR_SIDEBAR = "#FFFFFF" # Warna teks utama di sidebar
+# ---------------------------
+
+# INJEKSI CSS KUSTOM UNTUK WARNA SOLID & SIDEBAR
+st.markdown(f"""
     <style>
         /* Mengatur font global agar seragam dan jelas */
-        html, body, [class*="css"] {
+        html, body, [class*="css"] {{
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        }}
+        
+        /* 1. MENGUBAH LATAR BELAKANG UTAMA */
+        .stApp {{
+            background-color: {BG_COLOR_SOLID} !important;
+        }}
+
+        /* Container utama (area konten) */
+        .main .block-container {{
+            background-color: rgba(255, 255, 255, 0.04);
+            padding: 3rem;
+            border-radius: 12px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }}
+        
+        /* =====================================================
+           2. PERBAIKAN DAN KUSTOMISASI PANEL KIRI (SIDEBAR)
+           ===================================================== */
+        section[data-testid="stSidebar"] {{
+            background-color: {SIDEBAR_COLOR} !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }}
+
+        /* Memaksa semua teks standar di sidebar berwarna putih */
+        section[data-testid="stSidebar"] .stMarkdown, 
+        section[data-testid="stSidebar"] label, 
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3,
+        section[data-testid="stSidebar"] span {{
+            color: {TEXT_COLOR_SIDEBAR} !important;
+        }}
+        
+        /* 🔥 FIX INFO BOX SIDEBAR (Dataset aktif: 1,000 record) 🔥 */
+        /* Memaksa background box sedikit transparan terang dan teks di dalamnya putih bersih */
+        section[data-testid="stSidebar"] div[data-testid="stAlert"] {{
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        }}
+        
+        section[data-testid="stSidebar"] div[data-testid="stAlert"] p,
+        section[data-testid="stSidebar"] div[data-testid="stAlert"] div {{
+            color: #FFFFFF !important;
+            font-weight: 500 !important;
+        }}
+        /* ===================================================== */
         
         /* Desain Metric Box yang lebih soft dan interaktif */
-        div[data-testid="stMetricBlock"] {
-            background-color: #F8F9FA;
-            border: 1px solid #E9ECEF;
+        div[data-testid="stMetricBlock"] {{
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 15px 20px;
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        div[data-testid="stMetricBlock"]:hover {
+        }}
+        div[data-testid="stMetricBlock"]:hover {{
             transform: translateY(-4px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
             border-color: #1E88E5;
-        }
+        }}
         
         /* Animasi dan Styling untuk Semua Tombol */
-        .stButton > button {
+        .stButton > button {{
             background-color: #1E88E5;
             color: white !important;
             border-radius: 8px;
@@ -60,29 +112,23 @@ st.markdown("""
             font-weight: 600;
             transition: all 0.25s ease-in-out;
             box-shadow: 0 2px 5px rgba(30,136,229,0.2);
-        }
-        .stButton > button:hover {
+        }}
+        .stButton > button:hover {{
             background-color: #1565C0;
             transform: scale(1.02);
             box-shadow: 0 5px 15px rgba(21,101,192,0.4);
-        }
-        .stButton > button:active {
+        }}
+        .stButton > button:active {{
             transform: scale(0.98);
-        }
-        
-        /* Kustomisasi Sidebar Bertema Terang dan Rapi */
-        section[data-testid="stSidebar"] {
-            background-color: #F4F6F9;
-            border-right: 1px solid #E3E7ED;
-        }
+        }}
         
         /* Efek Transisi Halus pada Input Form */
-        div[data-baseweb="select"], div[data-baseweb="input"] {
+        div[data-baseweb="select"], div[data-baseweb="input"] {{
             transition: border-color 0.2s ease;
-        }
-        div[data-baseweb="select"]:hover, div[data-baseweb="input"]:hover {
+        }}
+        div[data-baseweb="select"]:hover, div[data-baseweb="input"]:hover {{
             border-color: #1E88E5 !important;
-        }
+        }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -112,11 +158,8 @@ jurusan_options = [
 ]
 
 if pilihan == "Semua Jurusan":
-
     selected_jurusan = jurusan_options
-
 else:
-
     selected_jurusan = st.sidebar.multiselect(
         "Pilih Jurusan",
         jurusan_options,
@@ -170,12 +213,10 @@ if st.session_state.current_size != data_size:
 
 # Jika tombol generate ditekan
 if generate_btn:
-
     st.session_state.dataset = generate_data(
         data_size,
         selected_jurusan
     )
-
     st.session_state.sorted_data = None
 
 # =====================================================
@@ -220,11 +261,8 @@ selected_algorithm = st.selectbox(
 )
 
 if st.button("Jalankan Sorting Terpilih"):
-
     sorting_function = algorithms[selected_algorithm]
-
     tracemalloc.start()
-
     start_time = time.perf_counter()
 
     sorted_result, comps, swaps = sorting_function(
@@ -233,13 +271,10 @@ if st.button("Jalankan Sorting Terpilih"):
     )
 
     end_time = time.perf_counter()
-
     current_memory, peak_memory = tracemalloc.get_traced_memory()
-
     tracemalloc.stop()
 
     st.session_state.sorted_data = sorted_result
-
     st.success(
         f"{selected_algorithm} berhasil dijalankan."
     )
@@ -291,13 +326,11 @@ if (
     ]
     and len(st.session_state.dataset) > 10000
 ):
-
     st.error(
         "Dataset terlalu besar untuk "
         f"{selected_algorithm}. "
         "Gunakan Merge Sort atau Quick Sort."
     )
-
     st.stop()
 
 
@@ -306,21 +339,14 @@ if (
 # =====================================================
 
 st.divider()
-
 st.subheader("📊 Benchmark Semua Algoritma")
 
-
 if st.button("Jalankan Semua Algoritma"):
-    
-
     results = []
-
     progress = st.progress(0)
-
     total_algorithms = len(algorithms)
 
     for index, (name, func) in enumerate(algorithms.items()):
-
         if (
             len(st.session_state.dataset) >= 50000
             and name in [
@@ -331,7 +357,6 @@ if st.button("Jalankan Semua Algoritma"):
             continue
 
         tracemalloc.start()
-
         start_time = time.perf_counter()
 
         sorted_res, comps, swaps = func(
@@ -340,11 +365,8 @@ if st.button("Jalankan Semua Algoritma"):
         )
 
         end_time = time.perf_counter()
-
         duration = end_time - start_time
-
         current_memory, peak_memory = tracemalloc.get_traced_memory()
-
         tracemalloc.stop()
 
         results.append({
@@ -356,9 +378,7 @@ if st.button("Jalankan Semua Algoritma"):
             "Kompleksitas": complexities[name]
         })
 
-
         if len(st.session_state.dataset) >= 50000:
-
             st.warning(
                 "Bubble Sort dan Selection Sort "
                 "akan membutuhkan waktu sangat lama "
@@ -371,7 +391,6 @@ if st.button("Jalankan Semua Algoritma"):
         progress.progress((index + 1) / total_algorithms)
 
     st.success("Benchmark selesai!")
-
     result_df = pd.DataFrame(results)
 
     st.dataframe(
@@ -381,7 +400,6 @@ if st.button("Jalankan Semua Algoritma"):
 
     st.subheader("Grafik Perbandingan Waktu")
 
-    # Pembuatan grafik interaktif yang estetik, animasi halus, dan warna pastel yang jelas
     fig = px.bar(
         result_df,
         x="Algoritma",
@@ -393,7 +411,6 @@ if st.button("Jalankan Semua Algoritma"):
         color_discrete_sequence=px.colors.qualitative.Pastel
     )
 
-    # Menambahkan animasi pemuatan grafik & mengunci batas minimum sumbu Y
     fig.update_traces(
         texttemplate='%{text:.5f} s', 
         textposition='outside',
@@ -407,7 +424,7 @@ if st.button("Jalankan Semua Algoritma"):
         showlegend=False,
         font=dict(family="Segoe UI, sans-serif", size=13),
         margin=dict(l=20, r=20, t=20, b=20),
-        transition_duration=500  # Durasi animasi grafik saat ter-render
+        transition_duration=500  
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -419,7 +436,7 @@ if st.button("Jalankan Semua Algoritma"):
     )
 
     fastest = result_df.loc[
-    result_df["Waktu (detik)"].astype(float).idxmin()
+        result_df["Waktu (detik)"].astype(float).idxmin()
     ]
 
     slowest = result_df.loc[
@@ -447,11 +464,8 @@ if st.button("Jalankan Semua Algoritma"):
 # =====================================================
 
 if st.session_state.sorted_data is not None:
-
     st.divider()
-
     st.subheader("📑 Hasil Sorting (10 Data Pertama)")
-
     st.dataframe(
         pd.DataFrame(st.session_state.sorted_data).head(10),
         use_container_width=True
@@ -462,34 +476,25 @@ if st.session_state.sorted_data is not None:
 # =====================================================
 
 st.divider()
-
 st.subheader("🔍 Binary Search")
 
 if st.session_state.sorted_data is not None:
-
     nim_query = st.text_input(
         "Masukkan NIM yang dicari"
     )
 
     if st.button("Cari dengan Binary Search"):
-
         result = binary_search(
             st.session_state.sorted_data,
             nim_query
         )
 
         if result:
-
             st.success("Data ditemukan!")
-
             st.json(result)
-
         else:
-
             st.error("Data tidak ditemukan.")
-
 else:
-
     st.warning(
         "Jalankan proses sorting terlebih dahulu "
         "agar Binary Search dapat digunakan."
