@@ -324,14 +324,11 @@ if (
         "Bubble Sort",
         "Selection Sort"
     ]
-    and len(st.session_state.dataset) > 10000
+    and len(st.session_state.dataset) >= 50000
 ):
-    st.error(
-        "Dataset terlalu besar untuk "
-        f"{selected_algorithm}. "
-        "Gunakan Merge Sort atau Quick Sort."
+    st.warning(
+        "Proses dapat memakan waktu sangat lama."
     )
-    st.stop()
 
 
 # =====================================================
@@ -354,7 +351,10 @@ if st.button("Jalankan Semua Algoritma"):
                 "Selection Sort"
             ]
         ):
-            continue
+            st.warning(
+                f"{name} sedang diproses. "
+                "Mungkin membutuhkan waktu lama."
+            )
 
         tracemalloc.start()
         start_time = time.perf_counter()
