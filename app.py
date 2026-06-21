@@ -220,9 +220,8 @@ if generate_btn:
     st.session_state.sorted_data = None
 
 # =====================================================
-# DATASET AWAL
+# DISPLAY DATASET MENTAH
 # =====================================================
-
 st.subheader(f"Dataset Mentah ({len(st.session_state.dataset)} Data)")
 
 col1, col2 = st.columns(2)
@@ -234,13 +233,14 @@ with col1:
     )
 
 with col2:
+    # Menggunakan len() agar jumlahnya dinamis mengikuti pilihan user
     st.metric(
         "Jumlah Jurusan",
-        4
+        len(selected_jurusan)
     )
 
 st.dataframe(
-    pd.DataFrame(st.session_state.dataset).head(10),
+    pd.DataFrame(st.session_state.dataset).head(100), # Sudah diganti 100 data
     use_container_width=True
 )
 
