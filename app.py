@@ -26,13 +26,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CONFIG WARNA SOLID ---
+# --- CONFIG WARNA ---
 BG_COLOR_SOLID = "#263238"   # Warna background utama
 SIDEBAR_COLOR = "#1E272C"    # Warna background sidebar
 TEXT_COLOR_SIDEBAR = "#FFFFFF" # Warna teks utama di sidebar
 # ---------------------------
 
-# INJEKSI CSS KUSTOM UNTUK WARNA SOLID & SIDEBAR
+# INJEKSI CSS KUSTOM UNTUK WARNA SOLID & sidebar
 st.markdown(f"""
     <style>
         /* Mengatur font global agar seragam dan jelas */
@@ -73,7 +73,7 @@ st.markdown(f"""
             color: {TEXT_COLOR_SIDEBAR} !important;
         }}
         
-        /* 🔥 FIX INFO BOX SIDEBAR (Dataset aktif: 1,000 record) 🔥 */
+        
         /* Memaksa background box sedikit transparan terang dan teks di dalamnya putih bersih */
         section[data-testid="stSidebar"] div[data-testid="stAlert"] {{
             background-color: rgba(255, 255, 255, 0.15) !important;
