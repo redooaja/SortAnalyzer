@@ -16,7 +16,6 @@ from utils.benchmark import (
     benchmark_algorithm
 )
 
-
 # =====================================================
 # 4. STREAMLIT APP
 # =====================================================
@@ -55,14 +54,14 @@ st.markdown(f"""
         }}
         
         /* =====================================================
-           2. PERBAIKAN DAN KUSTOMISASI PANEL KIRI (SIDEBAR)
+        2. KUSTOMISASI PANEL KIRI (SIDEBAR)
            ===================================================== */
         section[data-testid="stSidebar"] {{
             background-color: {SIDEBAR_COLOR} !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }}
 
-        /* Memaksa semua teks standar di sidebar berwarna putih */
+        /*semua teks standar di sidebar berwarna putih */
         section[data-testid="stSidebar"] .stMarkdown, 
         section[data-testid="stSidebar"] label, 
         section[data-testid="stSidebar"] p,
@@ -74,7 +73,7 @@ st.markdown(f"""
         }}
         
         
-        /* Memaksa background box sedikit transparan terang dan teks di dalamnya putih bersih */
+        /*background box sedikit transparan terang dan teks di dalamnya putih bersih */
         section[data-testid="stSidebar"] div[data-testid="stAlert"] {{
             background-color: rgba(255, 255, 255, 0.15) !important;
             border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -240,7 +239,7 @@ with col2:
     )
 
 st.dataframe(
-    pd.DataFrame(st.session_state.dataset).head(100), # Sudah diganti 100 data
+    pd.DataFrame(st.session_state.dataset),
     use_container_width=True
 )
 
@@ -312,10 +311,10 @@ if st.button("Jalankan Sorting Terpilih"):
         f"Peak Memory: {peak_memory/1024:.2f} KB"
     )
 
-    st.subheader("Hasil Sorting (100 Data Pertama)")
+    st.subheader("Hasil Sorting Dataset Mahasiswa")
 
     st.dataframe(
-        pd.DataFrame(sorted_result).head(100),
+        pd.DataFrame(sorted_result),
         use_container_width=True
     )
 
@@ -379,13 +378,15 @@ if st.button("Jalankan Semua Algoritma"):
             res = benchmark_algorithm(func, st.session_state.dataset, "NIM")
 
             results.append({
-                "Algoritma": name,
-                "Waktu (detik)": round(res["time"], 6),
-                "Perbandingan": res["comparisons"],
-                "Swaps": res["swaps"],
-                "Peak Memory (KB)": round(res["peak_memory"], 2),
-                "Kompleksitas": complexities[name]
-            })
+            "Algoritma": name,
+            "Waktu (detik)": round(res["time"], 6),
+            "Perbandingan": res["comparisons"],
+            "Swaps": res["swaps"],
+            "Peak Memory (KB)": round(res["peak_memory"], 2),
+            "Kompleksitas": complexities[name]
+        })
+
+
 
             if name == "Quick Sort":
                 st.session_state.sorted_data = res["sorted_data"]
@@ -396,40 +397,144 @@ if st.button("Jalankan Semua Algoritma"):
     result_df = pd.DataFrame(results)
     st.dataframe(result_df, use_container_width=True)
 
-    # VISUALISASI GRAFIK
-    st.subheader("Grafik Perbandingan Waktu")
-    fig = px.bar(
-        result_df,
-        x="Algoritma",
-        y="Waktu (detik)",
-        color="Algoritma",
-        text="Waktu (detik)",
-        labels={"Waktu (detik)": "Waktu Proses (Detik)"},
-        template="plotly_white",
-        color_discrete_sequence=px.colors.qualitative.Pastel
-    )
-    fig.update_traces(
-        texttemplate='%{text:.5f} s', 
-        textposition='outside',
-        marker_line_color='rgb(8,48,107)',
-        marker_line_width=1.5, 
-        opacity=0.85
-    )
-    fig.update_layout(
-        yaxis=dict(range=[0, result_df["Waktu (detik)"].max() * 1.2]),
-        showlegend=False,
-        font=dict(family="Segoe UI, sans-serif", size=13),
-        margin=dict(l=20, r=20, t=20, b=20)
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-    # KESIMPULAN
-    fastest = result_df.loc[result_df["Waktu (detik)"].idxmin()]
-    slowest = result_df.loc[result_df["Waktu (detik)"].idxmax()]
-
+    # =====================================================
+    # TABEL HASIL BENCHMARK
+    # =====================================================
+    
+    chart_df = result_df.set_index("Algoritma")
+    
+    # =====================================================
+    # VISUALISASI BENCHMARK PROFESIONAL
+    # =====================================================
+    
+    st.subheader("📈 Analisis Perbandingan Algoritma")
+    
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "⏱ Waktu",
+        "🔄 Comparison",
+        "🔁 Swap",
+        "💾 Memory"
+    ])
+    
+    with tab1:
+    
+        fig_time = px.bar(
+            result_df,
+            x="Algoritma",
+            y="Waktu (detik)",
+            text="Waktu (detik)",
+            color="Algoritma"
+        )
+    
+        fig_time.update_layout(
+            title="Perbandingan Waktu Eksekusi",
+            showlegend=False
+        )
+    
+        st.plotly_chart(
+            fig_time,
+            use_container_width=True
+        )
+    
+    with tab2:
+    
+        fig_comp = px.bar(
+            result_df,
+            x="Algoritma",
+            y="Perbandingan",
+            text="Perbandingan",
+            color="Algoritma"
+        )
+    
+        fig_comp.update_layout(
+            title="Jumlah Comparison",
+            showlegend=False
+        )
+    
+        st.plotly_chart(
+            fig_comp,
+            use_container_width=True
+        )
+    
+    with tab3:
+    
+        fig_swap = px.bar(
+            result_df,
+            x="Algoritma",
+            y="Swaps",
+            text="Swaps",
+            color="Algoritma"
+        )
+    
+        fig_swap.update_layout(
+            title="Jumlah Swap",
+            showlegend=False
+        )
+    
+        st.plotly_chart(
+            fig_swap,
+            use_container_width=True
+        )
+    
+    with tab4:
+    
+        fig_mem = px.bar(
+            result_df,
+            x="Algoritma",
+            y="Peak Memory (KB)",
+            text="Peak Memory (KB)",
+            color="Algoritma"
+        )
+    
+        fig_mem.update_layout(
+            title="Peak Memory Usage",
+            showlegend=False
+        )
+    
+        st.plotly_chart(
+            fig_mem,
+            use_container_width=True
+        )
+    
+    # =====================================================
+    # KESIMPULAN OTOMATIS
+    # =====================================================
+    
+    fastest = result_df.loc[
+        result_df["Waktu (detik)"].astype(float).idxmin()
+    ]
+    
+    slowest = result_df.loc[
+        result_df["Waktu (detik)"].astype(float).idxmax()
+    ]
+    
     st.subheader("📌 Kesimpulan")
-    st.success(f"Algoritma tercepat adalah **{fastest['Algoritma']}** dengan waktu **{fastest['Waktu (detik)']}** detik.")
-    st.warning(f"Algoritma terlambat (berdasarkan estimasi data besar) adalah **{slowest['Algoritma']}** dengan waktu **{slowest['Waktu (detik)']}** detik.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.success(
+            f"""
+            🚀 Algoritma Tercepat
+    
+            {fastest['Algoritma']}
+    
+            Waktu:
+            {fastest['Waktu (detik)']} detik
+            """
+        )
+    
+    with col2:
+        st.error(
+            f"""
+            🐢 Algoritma Terlambat
+    
+            {slowest['Algoritma']}
+    
+            Waktu:
+            {slowest['Waktu (detik)']} detik
+            """
+        )
 
 # =====================================================
 # DATA HASIL SORTING
@@ -437,9 +542,9 @@ if st.button("Jalankan Semua Algoritma"):
 
 if st.session_state.sorted_data is not None:
     st.divider()
-    st.subheader("📑 Hasil Sorting (100 Data Pertama)")
+    st.subheader("📑 Hasil Sorting Dataset Mahasiswa")
     st.dataframe(
-        pd.DataFrame(st.session_state.sorted_data).head(100),
+        pd.DataFrame(st.session_state.sorted_data),
         use_container_width=True
     )
 
