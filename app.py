@@ -263,35 +263,90 @@ if st.button("Jalankan Sorting Terpilih"):
 
     sorting_function = algorithms[selected_algorithm]
 
-    with st.spinner(
-        f"Menjalankan {selected_algorithm}..."
-    ):
+    # Progress Bar
+    progress_bar = st.progress(0)
+    status_text = st.empty()
 
-        progress = st.progress(0)
+    status_text.info(
+        f"⏳ Menjalankan {selected_algorithm}..."
+    )
 
-        for i in range(100):
-            time.sleep(0.005)
-            progress.progress(i + 1)
+    # Animasi loading
+    for i in range(100):
+        time.sleep(0.005)
+        progress_bar.progress(i + 1)
 
-        tracemalloc.start()
+    tracemalloc.start()
 
-        start_time = time.perf_counter()
+    start_time = time.perf_counter()
 
-        sorted_result, comps, swaps = sorting_function(
-            st.session_state.dataset,
-            "NIM"
+    sorted_result, comps, swaps = sorting_function(
+        st.session_state.dataset,
+        "NIM"
+    )
+
+    end_time = time.perf_counter()
+
+    current_memory, peak_memory = tracemalloc.get_traced_memory()
+
+    tracemalloc.stop()
+
+    # Hapus progress
+    progress_bar.empty()
+
+    status_text.success(
+        f"✅ {selected_algorithm} berhasil dijalankan."
+    )
+
+    st.session_state.sorted_data = sorted_result
+
+    # ==========================
+    # HASIL METRIK
+    # ==========================
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "⏱️ Waktu Eksekusi",
+            f"{end_time-start_time:.6f} detik"
         )
 
-        end_time = time.perf_counter()
+    with col2:
+        st.metric(
+            "🔍 Perbandingan",
+            f"{comps:,}"
+        )
 
-        current_memory, peak_memory = tracemalloc.get_traced_memory()
+    with col3:
+        st.metric(
+            "🔄 Swap",
+            f"{swaps:,}"
+        )
 
-        tracemalloc.stop()
+    st.info(
+        f"""
+        **Algoritma:** {selected_algorithm}
 
-        progress.empty()
+        **Kompleksitas Waktu:** {complexities[selected_algorithm]}
+        """
+    )
 
-    st.success(
-        f"{selected_algorithm} berhasil dijalankan!"
+    st.info(
+        f"💾 Peak Memory: {peak_memory/1024:.2f} KB"
+    )
+
+    # ==========================
+    # TABEL HASIL SORTING
+    # ==========================
+
+    st.subheader(
+        "📋 Hasil Sorting Dataset Mahasiswa"
+    )
+
+    st.dataframe(
+        pd.DataFrame(sorted_result),
+        use_container_width=True
     )
 
 if (
