@@ -260,62 +260,38 @@ selected_algorithm = st.selectbox(
 )
 
 if st.button("Jalankan Sorting Terpilih"):
+
     sorting_function = algorithms[selected_algorithm]
-    tracemalloc.start()
-    start_time = time.perf_counter()
 
-    sorted_result, comps, swaps = sorting_function(
-        st.session_state.dataset,
-        "NIM"
-    )
+    with st.spinner(
+        f"Menjalankan {selected_algorithm}..."
+    ):
 
-    end_time = time.perf_counter()
-    current_memory, peak_memory = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
+        progress = st.progress(0)
 
-    st.session_state.sorted_data = sorted_result
+        for i in range(100):
+            time.sleep(0.005)
+            progress.progress(i + 1)
+
+        tracemalloc.start()
+
+        start_time = time.perf_counter()
+
+        sorted_result, comps, swaps = sorting_function(
+            st.session_state.dataset,
+            "NIM"
+        )
+
+        end_time = time.perf_counter()
+
+        current_memory, peak_memory = tracemalloc.get_traced_memory()
+
+        tracemalloc.stop()
+
+        progress.empty()
+
     st.success(
-        f"{selected_algorithm} berhasil dijalankan."
-    )
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Waktu Eksekusi",
-            f"{end_time-start_time:.6f} detik"
-        )
-
-    with col2:
-        st.metric(
-            "Perbandingan",
-            comps
-        )
-
-    with col3:
-        st.metric(
-            "Swap",
-            swaps
-        )
-
-    st.info(
-        f"""
-        Algoritma: {selected_algorithm}
-
-        Kompleksitas Waktu:
-        {complexities[selected_algorithm]}
-        """
-    )
-
-    st.info(
-        f"Peak Memory: {peak_memory/1024:.2f} KB"
-    )
-
-    st.subheader("Hasil Sorting Dataset Mahasiswa")
-
-    st.dataframe(
-        pd.DataFrame(sorted_result),
-        use_container_width=True
+        f"{selected_algorithm} berhasil dijalankan!"
     )
 
 if (
